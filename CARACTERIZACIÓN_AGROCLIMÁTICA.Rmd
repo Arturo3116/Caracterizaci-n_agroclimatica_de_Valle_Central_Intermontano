@@ -1,0 +1,1598 @@
+
+---
+title: "Caracterización agroclimatica de Valle Central Intermontano"
+output: html_notebook
+---
+### author: 
+### - "Luis Arturo Arrieta " con apoyo de OpenAI. (2023)
+
+# Cargar dataframes
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(readr)
+library(readxl)
+library(ggplot2)
+valle_intermontano_central <- read_csv("valle_intermontano_central.csv", 
+    col_types = cols(Date = col_date(format = "%Y-%m-%d"), 
+        DV = col_number(), VV = col_number(), 
+        TN = col_number(), TM = col_number(), 
+        HR = col_number(), PP = col_number(), 
+        RAD_MEA = col_number(), SUNSHINE = col_number()))
+temperatura_maxima <- read_excel("temperatura_maxima.xlsx", 
+    col_types = c("date", "numeric"))
+```
+
+
+
+# 2. Caracterización climática de la temperatura del aire.
+
+## 1. Variación interanual de la temperatura máxima
+
+### 1.3. Temperaturas máximas medias anuales por estación.
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Convertir la columna "Date" en formato fecha
+temperatura_maxima$Date <- as.Date(temperatura_maxima$Date, format = "%Y-%m-%d")
+# Calcular la temperatura máxima media anual
+temp_media_maxima_anual <- aggregate(temperatura_maxima$TEMP_MAX, 
+                              by = list(Año = format(temperatura_maxima$Date, "%Y")), 
+                              FUN = mean)
+
+library(knitr)
+kable(temp_media_maxima_anual, caption = "Temperatura máxima media anual en Aeropueto Juan Santa Maria")
+```
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+ggplot(temp_media_maxima_anual, aes(x = as.numeric(Año), y = x)) +
+  geom_line(color = "#8B2323", linewidth = 1.5) +
+  scale_x_continuous(breaks = seq(min(as.numeric(temp_media_maxima_anual$Año)),
+                                   max(as.numeric(temp_media_maxima_anual$Año)), 2)) +
+  labs(x = "Año", y = "Temperatura maxima media anual (°C)",
+       title = "Temperatura máxima media anual en Aeropueto Juan Santa Maria")
+
+```
+
+
+
+### 1.4. Temperatura máxima absoluta anual por estación.
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Convertir la columna "Date" en formato fecha
+temperatura_maxima$Date <- as.Date(temperatura_maxima$Date, format = "%Y-%m-%d")
+
+# Calcular la temperatura máxima absoluta anual
+temp_max_anual_absoluta <- aggregate(temperatura_maxima$TEMP_MAX, 
+                            by = list(Año = format(temperatura_maxima$Date, "%Y")), 
+                            FUN = max)
+
+kable(temp_max_anual_absoluta, caption = "Temperatura máxima absoluta anual en Aeropueto Juan Santa Maria")
+
+```
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+ggplot(temp_max_anual_absoluta, aes(x = as.numeric(Año), y = x)) +
+  geom_line(color = "red", linewidth = 1.5) +
+  scale_x_continuous(breaks = seq(min(as.numeric(temp_max_anual_absoluta$Año)),
+                                   max(as.numeric(temp_max_anual_absoluta$Año)), 2)) +
+  labs(x = "Año", y = "Temperatura maxima absoluta anual (°C)",
+       title = "Temperatura máxima absoluta anual en Aeropueto Juan Santa Maria")
+
+```
+
+
+
+## 2. Variación interanual de la temperatura mínima
+
+Por algún motivo, la estación meteorologica de SANTA_BARBARA registró -43.2 para la fecha 2013-07-27, vamos a reemplzar ese valor por un NA
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+subset(valle_intermontano_central, TN == min(TN, na.rm = TRUE))
+```
+
+Borrar dato
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+valle_intermontano_central$TN[valle_intermontano_central$Date == "2013-07-27"] <- NA
+
+```
+
+Revisar el cambio
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+subset(valle_intermontano_central, Date == "2013-07-27", select = c("Date", "TN", "Nombre_Base"))
+
+```
+
+
+### 2.1. Temperaturas mínimas medias anuales en la región
+
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+temp_min_media_anual <- aggregate(valle_intermontano_central$TN, 
+                                  by = list(Año = format(valle_intermontano_central$Date, "%Y")), 
+                                  FUN = function(x) mean(x, na.rm = TRUE))
+
+kable(temp_min_media_anual, caption = "Temperatura mínima media anual en Valle central Intermontano")
+
+```
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+ggplot(temp_min_media_anual, aes(x = as.numeric(Año), y = x)) +
+  geom_line(color = "blue", linewidth = 1.5) +
+  scale_x_continuous(breaks = seq(min(as.numeric(temp_min_media_anual$Año)),
+                                   max(as.numeric(temp_min_media_anual$Año)), 2)) +
+  labs(x = "Año", y = "Temperatura mínima media anual (°C)",
+       title = "Temperatura mínima media anual en Valle central Intermontano")
+
+```
+
+### 2.2. Temperatura mínima absoluta anual en la región.
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+temp_min_absoluta_anual <- aggregate(valle_intermontano_central$TN, 
+                                  by = list(Año = format(valle_intermontano_central$Date, "%Y")), 
+                                  FUN = function(x) min(x, na.rm = TRUE))
+
+kable(temp_min_absoluta_anual, caption = "Temperatura mínima absoluta anual en Valle central Intermontano")
+```
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+ggplot(temp_min_absoluta_anual, aes(x = as.numeric(Año), y = x)) +
+  geom_line(color = "#5F9EA0", linewidth = 1.5) +
+  scale_x_continuous(breaks = seq(min(as.numeric(temp_min_absoluta_anual$Año)),
+                                   max(as.numeric(temp_min_absoluta_anual$Año)), 2)) +
+  labs(x = "Año", y = "Temperatura mínima absoluta anual (°C)",
+       title = "Temperatura mínima absoluta anual en Valle central Intermontano")
+
+```
+
+
+### 2.3. Temperaturas mínimas medias anuales por estación
+
+#### 2.3.1 y 2.4.1 Estación Juan Santa María
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+temp_min_media_anual_santamaria <- aggregate(subset(valle_intermontano_central, Nombre_Base == "metdata_Santamaria")$TN, 
+                                  by = list(Año = format(subset(valle_intermontano_central, Nombre_Base == "metdata_Santamaria")$Date, "%Y")), 
+                                  FUN = function(x) mean(x, na.rm = TRUE))
+
+kable(temp_min_media_anual_santamaria, caption = "Temperatura mínima media anual en el Aeropuerto Juan Santa María")
+
+```
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+ggplot(temp_min_media_anual_santamaria, aes(x = as.numeric(Año), y = x)) +
+  geom_line(color = "#66CDAA", linewidth = 1.5) +
+  scale_x_continuous(breaks = seq(min(as.numeric(temp_min_media_anual_santamaria$Año)),
+                                   max(as.numeric(temp_min_media_anual_santamaria$Año)), 2)) +
+  labs(x = "Año", y = "Temperatura mínima media anual (°C)",
+       title = "Temperatura mínima media anual en Aeropuerto Juan Santa María")
+```
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+temp_min_absoluto_anual_santamaria <- aggregate(subset(valle_intermontano_central, Nombre_Base == "metdata_Santamaria")$TN, 
+                                  by = list(Año = format(subset(valle_intermontano_central, Nombre_Base == "metdata_Santamaria")$Date, "%Y")), 
+                                  FUN = function(x) min(x, na.rm = TRUE))
+
+kable(temp_min_absoluto_anual_santamaria, caption = "Temperatura mínima absoluta anual en Aeropuerto Juan Santa María")
+```
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+ggplot(temp_min_absoluto_anual_santamaria, aes(x = as.numeric(Año), y = x)) +
+  geom_line(color = "#A2B5CD", linewidth = 1.5) +
+  scale_x_continuous(breaks = seq(min(as.numeric(temp_min_absoluto_anual_santamaria$Año)),
+                                   max(as.numeric(temp_min_media_anual_santamaria$Año)), 2)) +
+  labs(x = "Año", y = "Temperatura mínima absoluta anual (°C)",
+       title = "Temperatura mínima absoluta anual en Aeropuerto Juan Santa María")
+```
+
+
+
+#### 2.3.2 y 2.4.2 Estación Santa Barbara
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+temp_min_media_anual_santabarbara <- aggregate(subset(valle_intermontano_central, Nombre_Base == "metdata_santabarbara")$TN, 
+                                  by = list(Año = format(subset(valle_intermontano_central, Nombre_Base == "metdata_santabarbara")$Date, "%Y")), 
+                                  FUN = function(x) mean(x, na.rm = TRUE))
+
+kable(temp_min_media_anual_santabarbara, caption = "Temperatura mínima media anual en Santa Barbara")
+```
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+ggplot(temp_min_media_anual_santabarbara, aes(x = as.numeric(Año), y = x)) +
+  geom_line(color = "#7B68EE", linewidth = 1.5) +
+  scale_x_continuous(breaks = seq(min(as.numeric(temp_min_media_anual_santabarbara$Año)),
+                                   max(as.numeric(temp_min_media_anual_santabarbara$Año)), 2)) +
+  labs(x = "Año", y = "Temperatura mínima media anual (°C)",
+       title = "Temperatura mínima media anual en Santa Barbara")
+```
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+temp_min_absoluto_anual_santabarbara <- aggregate(subset(valle_intermontano_central, Nombre_Base == "metdata_santabarbara")$TN, 
+                                  by = list(Año = format(subset(valle_intermontano_central, Nombre_Base == "metdata_santabarbara")$Date, "%Y")), 
+                                  FUN = function(x) min(x, na.rm = TRUE))
+
+kable(temp_min_absoluto_anual_santabarbara, caption = "Temperatura mínima absoluta anual en Santa Barbara")
+```
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+ggplot(temp_min_absoluto_anual_santabarbara, aes(x = as.numeric(Año), y = x)) +
+  geom_line(color = "#5F9EA0", linewidth = 1.5) +
+  scale_x_continuous(breaks = seq(min(as.numeric(temp_min_absoluto_anual_santabarbara$Año)),
+                                   max(as.numeric(temp_min_absoluto_anual_santabarbara$Año)), 2)) +
+  labs(x = "Año", y = "Temperatura mínima absoluta anual (°C)",
+       title = "Temperatura mínima absoluta anual en Santa Barbara")
+```
+
+#### 2.3.3 y 2.4.3 Estación Naranjo
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+temp_min_media_anual_naranjo <- aggregate(subset(valle_intermontano_central, Nombre_Base == "metdata_naranjitobello")$TN, 
+                                  by = list(Año = format(subset(valle_intermontano_central, Nombre_Base == "metdata_naranjitobello")$Date, "%Y")), 
+                                  FUN = function(x) mean(x, na.rm = TRUE))
+
+kable(temp_min_media_anual_naranjo, caption = "Temperatura mínima media anual en Naranjo")
+```
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+ggplot(temp_min_media_anual_naranjo, aes(x = as.numeric(Año), y = x)) +
+  geom_line(color = "#00CDCD", linewidth = 1.5) +
+  scale_x_continuous(breaks = seq(min(as.numeric(temp_min_media_anual_naranjo$Año)),
+                                   max(as.numeric(temp_min_media_anual_naranjo$Año)), 2)) +
+  labs(x = "Año", y = "Temperatura mínima media anual (°C)",
+       title = "Temperatura mínima media anual en Naranjo")
+```
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+temp_min_absoluto_anual_naranjo <- aggregate(subset(valle_intermontano_central, Nombre_Base == "metdata_naranjitobello")$TN, 
+                                  by = list(Año = format(subset(valle_intermontano_central, Nombre_Base == "metdata_naranjitobello")$Date, "%Y")), 
+                                  FUN = function(x) min(x, na.rm = TRUE))
+
+kable(temp_min_absoluto_anual_naranjo, caption = "Temperatura mínima absoluta anual en Naranjo")
+```
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+ggplot(temp_min_absoluto_anual_naranjo, aes(x = as.numeric(Año), y = x)) +
+  geom_line(color = "#00008B", linewidth = 1.5) +
+  scale_x_continuous(breaks = seq(min(as.numeric(temp_min_absoluto_anual_naranjo$Año)),
+                                   max(as.numeric(temp_min_absoluto_anual_naranjo$Año)), 2)) +
+  labs(x = "Año", y = "Temperatura mínima absoluta anual (°C)",
+       title = "Temperatura mínima absoluta anual en Naranjo")
+```
+
+
+## 3. Variación interanual de la temperatura media
+
+### 3.1. Temperaturas medias anuales en la región
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+temp_media_anual <- aggregate(valle_intermontano_central$TM, 
+                                  by = list(Año = format(valle_intermontano_central$Date, "%Y")), 
+                                  FUN = function(x) mean(x, na.rm = TRUE))
+
+kable(temp_media_anual, caption = "Temperatura media anual en Valle central Intermontano")
+
+```
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+ggplot(temp_media_anual, aes(x = as.numeric(Año), y = x)) +
+  geom_line(color = "#66CD00", linewidth = 1.5) +
+  scale_x_continuous(breaks = seq(min(as.numeric(temp_media_anual$Año)),
+                                   max(as.numeric(temp_media_anual$Año)), 2)) +
+  labs(x = "Año", y = "Temperatura media anual (°C)",
+       title = "Temperatura media anual en Valle central Intermontano")
+```
+
+### 3.2. Temperaturas medias anuales por estación
+
+#### 3.2.1 Estación Juan Santa María
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+temp_media_anual_santamaria <- aggregate(subset(valle_intermontano_central, Nombre_Base == "metdata_Santamaria")$TM, 
+                                  by = list(Año = format(subset(valle_intermontano_central, Nombre_Base == "metdata_Santamaria")$Date, "%Y")), 
+                                  FUN = function(x) mean(x, na.rm = TRUE))
+
+kable(temp_media_anual_santamaria, caption = "Temperatura media anual en Aeropuerto Juan Santa María")
+```
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+ggplot(temp_media_anual_santamaria, aes(x = as.numeric(Año), y = x)) +
+  geom_line(color = "#CDBE70", linewidth = 1.5) +
+  scale_x_continuous(breaks = seq(min(as.numeric(temp_media_anual_santamaria$Año)),
+                                   max(as.numeric(temp_media_anual_santamaria$Año)), 2)) +
+  labs(x = "Año", y = "Temperatura media anual (°C)",
+       title = "Temperatura media anual en Aeropuerto Juan Santa María")
+```
+#### 3.2.2 Estación Santa Barbara
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+temp_media_anual_santabarbara <- aggregate(subset(valle_intermontano_central, Nombre_Base == "metdata_santabarbara")$TM, 
+                                  by = list(Año = format(subset(valle_intermontano_central, Nombre_Base == "metdata_santabarbara")$Date, "%Y")), 
+                                  FUN = function(x) mean(x, na.rm = TRUE))
+
+kable(temp_media_anual_santabarbara, caption = "Temperatura media anual en Santa Barbara")
+```
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+ggplot(temp_media_anual_santabarbara, aes(x = as.numeric(Año), y = x)) +
+  geom_line(color = "#7CCD7C", linewidth = 1.5) +
+  scale_x_continuous(breaks = seq(min(as.numeric(temp_media_anual_santabarbara$Año)),
+                                   max(as.numeric(temp_media_anual_santabarbara$Año)), 2)) +
+  labs(x = "Año", y = "Temperatura media anual (°C)",
+       title = "Temperatura media anual en Santa Barbara")
+```
+
+#### 3.2.1 Estación Santa Barbara
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+temp_media_anual_naranjo <- aggregate(subset(valle_intermontano_central, Nombre_Base == "metdata_naranjitobello")$TM, 
+                                  by = list(Año = format(subset(valle_intermontano_central, Nombre_Base == "metdata_naranjitobello")$Date, "%Y")), 
+                                  FUN = function(x) mean(x, na.rm = TRUE))
+
+kable(temp_media_anual_naranjo, caption = "Temperatura media anual en Naranjo")
+```
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+ggplot(temp_media_anual_naranjo, aes(x = as.numeric(Año), y = x)) +
+  geom_line(color = "#CDCD00", linewidth = 1.5) +
+  scale_x_continuous(breaks = seq(min(as.numeric(temp_media_anual_naranjo$Año)),
+                                   max(as.numeric(temp_media_anual_naranjo$Año)), 2)) +
+  labs(x = "Año", y = "Temperatura media anual (°C)",
+       title = "Temperatura media anual en Naranjo")
+```
+
+
+## 4. Amplitud térmica anual y climadiagramas por estación
+
+### 4.1 Amplitud térmica anual
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Renombrar la columna "x" del data frame "temp_max_anual_absoluta"
+names(temp_media_maxima_anual)[names(temp_media_maxima_anual)=="x"] <- "temp_max"
+
+# Renombrar la columna "x" del data frame "temp_min_absoluto_anual_santamaria"
+names(temp_min_media_anual_santamaria)[names(temp_min_media_anual_santamaria)=="x"] <- "temp_min"
+
+# Unir los dos data frames por el año
+temp_anual <- merge(temp_media_maxima_anual, temp_min_media_anual_santamaria, by = "Año")
+
+# Calcular la amplitud térmica anual
+temp_anual$amplitud_termica <- temp_anual$temp_max - temp_anual$temp_min
+
+kable(temp_anual, caption = "Amplitud térmica anual")
+```
+
+
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+ggplot(temp_anual, aes(x = as.Date(paste0(Año, "-01-01"), format = "%Y-%m-%d"), group = 1)) +
+  geom_line(aes(y = temp_max, color = "Temp. Máxima")) +
+  geom_line(aes(y = temp_min, color = "Temp. Mínima")) +
+  geom_line(aes(y = amplitud_termica, color = "Amplitud Térmica Anual")) +
+  scale_color_manual(values = c("Temp. Máxima" = "red", 
+                                "Temp. Mínima" = "green", 
+                                "Amplitud Térmica Anual" = "blue"),
+                     labels = c("Temperatura mínima",
+                                "Temperatura maxima",
+                                "Amplitud térmica anual")) +
+  labs(x = "Año", y = "Temperatura (°C)", 
+       title = "Amplitud térmica anual") +
+  scale_x_date(limits = as.Date(c("1998-01-01", "2020-01-01")), 
+               date_breaks = "2 years", date_labels = "%Y") +
+  theme_minimal()
+
+
+
+```
+### 4.2 climadiagramas por estación
+```{r warning=FALSE}
+library(readxl)
+library(readr)
+temperatura_maxima <- read_excel("temperatura_maxima.xlsx", 
+    col_types = c("date", "numeric"))
+metdata_Santamaria <- read_csv("metdata_Santamaria.csv", 
+    col_types = cols(Date = col_date(format = "%Y-%m-%d"), 
+        DV = col_number(), VV = col_number(), 
+        TN = col_number(), TM = col_number(), 
+        HR = col_number(), PP = col_number(), 
+        RAD_MEA = col_number(), SUNSHINE = col_number()))
+```
+
+#### Agregar la columna mes al data frame
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(lubridate)
+library(dplyr)
+
+metdata_Santamaria$Date <- as.Date(metdata_Santamaria$Date)
+
+metdata_Santamaria <- metdata_Santamaria %>%
+  mutate(month = month(Date, label = TRUE, abbr = TRUE))
+
+```
+
+##### Generar tabla de entrada como le gusta a Climatol
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(dplyr)
+library(tidyr)
+
+# Agregar columna de mes
+metdata_Santamaria <- metdata_Santamaria %>%
+  mutate(month = month(Date, label = TRUE, abbr = TRUE))
+
+# Calcular promedios
+promedios <- metdata_Santamaria %>%
+  group_by(month) %>%
+  summarise(across(c(PP), ~mean(., na.rm = TRUE)))
+
+# Pivoteo del data frame
+promedios <- promedios %>%
+  pivot_longer(cols = c(PP), names_to = "variable") %>%
+  pivot_wider(names_from = month, values_from = value)
+
+# Cambiar nombres de columnas
+names(promedios)[-1] <- month.abb
+
+
+
+
+```
+
+## Agregar la temperatura maxima
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+temperatura_maxima$Date <- as.Date(temperatura_maxima$Date)
+
+temperatura_maxima <- temperatura_maxima %>%
+  mutate(month = month(Date, label = TRUE, abbr = TRUE))
+# Calcular temperatura maxima
+tx <- temperatura_maxima %>%
+  group_by(month) %>%
+  summarise(tx = mean(TEMP_MAX, na.rm = TRUE)) %>%
+  pivot_wider(names_from = month, values_from = tx)
+
+# Unir con promedios
+promedios <- promedios %>%
+  bind_rows(tx)
+
+```
+
+## Agregar la temperatura minima promedio
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Calcular temperatura minima absoluta
+min_mean <- metdata_Santamaria %>%
+  group_by(month) %>%
+  summarise(TN = mean(TN, na.rm = TRUE)) %>%
+  pivot_wider(names_from = month, values_from = TN)
+
+# Unir con promedios
+promedios <- promedios %>%
+  bind_rows(min_mean)
+
+
+```
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Calcular temperatura minima absoluta
+min <- metdata_Santamaria %>%
+  group_by(month) %>%
+  summarise(TN_min = min(TN, na.rm = TRUE)) %>%
+  pivot_wider(names_from = month, values_from = TN_min)
+
+# Unir con promedios
+promedios <- promedios %>%
+  bind_rows(min)
+
+```
+
+
+
+### Borrar la columna "variable"
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+promedios <- promedios %>%
+  select(-variable)
+```
+### Borrar la columna NA
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+promedios <- select(promedios, -13)
+```
+
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(dplyr)
+
+# Cambiar nombres de columnas
+promedios <- promedios %>% 
+  rename(ENE = Jan, FEB = Feb, MAR = Mar, ABR = Apr, MAY = May, JUN = Jun,
+         JUL = Jul, AGO = Aug, SEP = Sep, OCT = Oct, NOV = Nov, DIC = Dec)
+```
+##### Visualizar Tabla lista para usar climatol
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(knitr)
+kable(promedios, caption = "Promedios mensuales de precipitaciones, temperatura maxima, minima y temperatura minima absoluta")
+```
+
+
+### Paquete climatol
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+require("climatol")
+diagwl(promedios,cols=NULL,est="Aeropuerto Juan Santamaria",alt=913,per="1998-2020",mlab="en")
+```
+#######################FAVOR BORRAR ENVIRONMENT#######################
+#################################################################################################################################################################################################################
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(readr)
+valle_intermontano_central <- read_csv("valle_intermontano_central.csv", 
+    col_types = cols(Date = col_date(format = "%Y-%m-%d"), 
+        DV = col_number(), VV = col_number(), 
+        TN = col_number(), TM = col_number(), 
+        HR = col_number(), PP = col_number(), 
+        RAD_MEA = col_number(), SUNSHINE = col_number()))
+```
+
+
+
+# 3. Caracterización climática de la precipitación.
+
+##### Agregar la columna "month al data frame
+
+######### Agregar mes
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Agregar columna de mes
+valle_intermontano_central <- valle_intermontano_central %>%
+  mutate(month = month(Date, label = TRUE, abbr = TRUE))
+```
+
+## Precipitación mensual media por estación
+
+### Estación Aeropuerto Juan Santamaria
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(dplyr)
+library(tidyr)
+
+# Filtrar por la variable Nombre_Base igual a "metdata_Santamaria"
+PP_santamaria <- valle_intermontano_central %>%
+  filter(Nombre_Base == "metdata_Santamaria")
+
+# Calcular promedios
+mean_pp_santamaria <- PP_santamaria %>%
+  group_by(month) %>%
+  summarise(across(c(PP), ~mean(., na.rm = TRUE)))
+
+
+
+# Visualizar data frame
+
+library(knitr)
+kable(mean_pp_santamaria, caption = "Promedios mensuales de precipitaciones estación  Aeropuerto Juansantamaria")
+```
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(ggplot2)
+
+ggplot(mean_pp_santamaria, aes(x = month, y = PP)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(title = "Promedio mensual de precipitación en Aeropuerto Juan Santamaria",
+       x = "Mes",
+       y = "Promedio (mm)") +
+  theme_bw()
+
+```
+### Estación Santa Barbara
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(dplyr)
+library(tidyr)
+
+# Filtrar por la variable Nombre_Base igual a "metdata_Santamaria"
+PP_santabarbara <- valle_intermontano_central %>%
+  filter(Nombre_Base == "metdata_santabarbara")
+
+# Calcular promedios
+mean_pp_santabarbara <- PP_santabarbara %>%
+  group_by(month) %>%
+  summarise(across(c(PP), ~mean(., na.rm = TRUE)))
+
+
+
+# Visualizar data frame
+library(knitr)
+kable(mean_pp_santabarbara, caption = "Promedios mensuales de precipitaciones estación Santa Barbara")
+```
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+ggplot(mean_pp_santabarbara, aes(x = month, y = PP)) +
+  geom_bar(stat = "identity", fill = "#76EEC6") +
+  labs(title = "Promedio mensual de precipitación en Santa Barbara",
+       x = "Mes",
+       y = "Promedio (mm)") +
+  theme_bw()
+
+```
+### Estación Naranjo
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(dplyr)
+library(tidyr)
+
+# Filtrar por la variable Nombre_Base igual a "metdata_Santamaria"
+PP_naranjo <- valle_intermontano_central %>%
+  filter(Nombre_Base == "metdata_naranjitobello")
+
+# Calcular promedios
+mean_pp_naranjo <- PP_naranjo %>%
+  group_by(month) %>%
+  summarise(across(c(PP), ~mean(., na.rm = TRUE)))
+
+
+
+# Visualizar data frame
+library(knitr)
+kable(mean_pp_naranjo, caption = "Promedios mensuales de precipitaciones estación Naranjo")
+```
+
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+ggplot(mean_pp_naranjo, aes(x = month, y = PP)) +
+  geom_bar(stat = "identity", fill = "#009ACD") +
+  labs(title = "Promedio mensual de precipitación en Naranjo",
+       x = "Mes",
+       y = "Promedio (mm)") +
+  theme_bw()
+```
+### Periodo total con precipitación mensual media por año en la Región
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+
+# Calcular promedios
+mean_pp_region <- valle_intermontano_central %>%
+  group_by(month) %>%
+  summarise(across(c(PP), ~mean(., na.rm = TRUE)))
+
+
+
+# Visualizar data frame
+library(knitr)
+kable(mean_pp_region, caption = "Promedios mensuales de precipitaciones Valle Central intermontano")
+```
+
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+ggplot(mean_pp_region, aes(x = month, y = PP)) +
+  geom_bar(stat = "identity", fill = "#3A5FCD") +
+  labs(title = "Promedio mensual de precipitación Valle central intermontano",
+       x = "Mes",
+       y = "Promedio (mm)") +
+  theme_bw()
+```
+### Periodo total con precipitación mensual por año en cada estación
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Calcular promedios
+sum_pp_region <- valle_intermontano_central %>%
+  group_by(month) %>%
+  summarise(across(c(PP), ~sum(., na.rm = TRUE)))
+
+
+
+# Visualizar data frame
+library(knitr)
+kable(sum_pp_region, caption = "Periodo total con precipitación mensual por año en cada estación Valle Central intermontano")
+```
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+ggplot(sum_pp_region, aes(x = month, y = PP)) +
+  geom_bar(stat = "identity", fill = "#6959CD") +
+  labs(title = "Promedio mensual de precipitación Valle central intermontano",
+       x = "Mes",
+       y = "total (mm)") +
+  theme_bw()
+```
+
+
+
+### Precipitación anual media en la Región
+
+#### Aeropuerto Jua Santa Maria
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+PP_media_anual_santamaria <- aggregate(subset(valle_intermontano_central, Nombre_Base == "metdata_Santamaria")$PP, 
+                                  by = list(Año = format(subset(valle_intermontano_central, Nombre_Base == "metdata_Santamaria")$Date, "%Y")), 
+                                  FUN = function(x) mean(x, na.rm = TRUE))
+
+kable(PP_media_anual_santamaria, caption = "Precipitación anual media en la estación Juan Santamaria")
+```
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+ggplot(PP_media_anual_santamaria, aes(x = Año, y = x)) +
+  geom_bar(stat = "identity", fill = "#9FB6CD") +
+  labs(title = "Promedio mensual en estación Aeropuerto Juan Santamaria",
+       x = "Año",
+       y = "Promedio anual") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+
+```
+
+#### Santa Barbara
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+PP_media_anual_santabarbara <- aggregate(subset(valle_intermontano_central, Nombre_Base == "metdata_santabarbara")$PP, 
+                                  by = list(Año = format(subset(valle_intermontano_central, Nombre_Base == "metdata_santabarbara")$Date, "%Y")), 
+                                  FUN = function(x) mean(x, na.rm = TRUE))
+
+kable(PP_media_anual_santabarbara, caption = "Precipitación anual media en la estación Santa Barbara")
+```
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+ggplot(PP_media_anual_santabarbara, aes(x = Año, y = x)) +
+  geom_bar(stat = "identity", fill = "#00CD66") +
+  labs(title = "Promedio mensual en estación Santa Barbara",
+       x = "Año",
+       y = "Promedio anual") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+```
+#### Naranjo
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+PP_media_anual_naranjo <- aggregate(subset(valle_intermontano_central, Nombre_Base == "metdata_naranjitobello")$PP, 
+                                  by = list(Año = format(subset(valle_intermontano_central, Nombre_Base == "metdata_naranjitobello")$Date, "%Y")), 
+                                  FUN = function(x) mean(x, na.rm = TRUE))
+
+kable(PP_media_anual_naranjo, caption = "Precipitación anual media en la estación Naranjo")
+```
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+ggplot(PP_media_anual_naranjo, aes(x = Año, y = x)) +
+  geom_bar(stat = "identity", fill = "#00C5CD") +
+  labs(title = "Promedio mensual en estación Naranjo",
+       x = "Año",
+       y = "Promedio anual") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+```
+#### Número de días con precipitación en cada estación
+
+### Datos sin normalizar
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(dplyr)
+
+valle_intermontano_central %>%
+  group_by(Nombre_Base) %>%
+  summarise(n = sum(!is.na(PP) & PP != 0, na.rm = TRUE))
+```
+#### Como la estacion del aeropuerto y la de Santa Barbara tiene mas conteos hay que recortar apartir de cuanto la de Naranjo emepezo a tomar datos.
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+head(valle_intermontano_central)
+```
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+valle_intermontano_central <- valle_intermontano_central %>%
+  filter(Date >= as.Date("2013-11-01"))
+
+```
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+head(valle_intermontano_central)
+```
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(dplyr)
+
+valle_intermontano_central %>%
+  group_by(Nombre_Base) %>%
+  summarise(n = sum(!is.na(PP) & PP != 0, na.rm = TRUE))
+```
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+datos <- c(1003, 1278, 1230)
+promedio <- mean(datos)
+promedio
+```
+
+###############################################################################################################################################################################################################
+
+### 1.1. Estimación de la Evapotranspiración Potencial (ETP): estimada al menos por una metodología (método de Thornthwaite).
+
+### cargar base de datos
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(readr)
+valle_intermontano_central <- read_csv("valle_intermontano_central.csv")
+```
+
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(lubridate)
+library(dplyr)
+# Agregar columna de mes
+valle_intermontano_central <- valle_intermontano_central %>%
+  mutate(month = month(Date, label = TRUE, abbr = TRUE))
+# Agregar columna con el año
+valle_intermontano_central <- valle_intermontano_central %>%
+  mutate(Year = year(Date))
+```
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Agregar columna con la cantidad de días por mes
+valle_intermontano_central <- valle_intermontano_central %>%
+  mutate(days_per_month = days_in_month(Date))
+
+```
+
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(dplyr)
+# Calcular promedios
+ETP <- valle_intermontano_central %>%
+  group_by(month) %>%
+  summarise(across(c(TM, SUNSHINE, days_per_month), ~mean(., na.rm = TRUE)))
+```
+
+
+#### Calcular el indice calorico mensual para cada mes
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Calcular la nueva columna "ind.c.m"
+ETP$ind.c.m <- (ETP$TM / 5) ^ 1.514
+
+```
+
+#### Calcular el indice calorico anual
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Calcular la suma de la columna "ind.c.m"
+suma_ind_cm <- sum(ETP$ind.c.m)
+suma_ind_cm
+```
+
+
+##### Calcular el coeficiente de ajuste para cada mes
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Calcular la nueva columna "c.ajxm"
+ETP$c.ajxm <- (ETP$days_per_month * ETP$SUNSHINE) / (12 * 30)
+
+```
+
+#### Calcular la evapotranspiracion potencial
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Calcular la nueva columna "Thornthwaite"
+a <-((6.75 * 10^-7) * (suma_ind_cm)^3 -7.71 * 10^-5 * (suma_ind_cm)^2 + 0.01792 * (suma_ind_cm) + 0.49239)
+print(a)
+```
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+ETP$Thornthwaite <- ETP$c.ajxm * 16 * (10 * (ETP$TM / suma_ind_cm))^2.461488
+```
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(dplyr)
+# Calcular promedios
+SUM_PP_M <- valle_intermontano_central %>%
+  group_by(month) %>%
+  summarise(across(c(PP), ~mean(., na.rm = TRUE)))
+```
+
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(dplyr)
+library(lubridate)
+# Convertir la columna "Date" a formato de fecha
+valle_intermontano_central$Date <- as.Date(valle_intermontano_central$Date)
+
+# Calcular la sumatoria por mes y el promedio entre todos los años por mes
+SUM_PP_M <- valle_intermontano_central %>%
+  group_by(Year, month) %>%
+  summarise(Sum_PP = sum(PP, na.rm = TRUE)) %>%
+  group_by(month) %>%
+  summarise(Avg_PP = mean(Sum_PP))
+
+# Agregar la columna Avg_PP al dataframe ETP
+ETP <- ETP %>%
+  left_join(SUM_PP_M, by = "month")
+
+
+```
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(knitr)
+kable(ETP)
+```
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Guardar el objeto ETP como un archivo CSV
+write.csv(ETP, file = "ETP.csv", row.names = FALSE)
+
+```
+
+###############################################################################################################################################################################################################
+
+#Cargar ETP
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(readr)
+ETP <- read_csv("ETP.csv", 
+    col_types = cols(TM = col_number(), SUNSHINE = col_number(), 
+        days_per_month = col_number(), ind.c.m = col_number(), 
+        c.ajxm = col_number(), Thornthwaite = col_number(), 
+        Avg_PP = col_number()))
+```
+
+# 1.2. Balance de agua del suelo: Balance hidrológico climático (BHC)
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+
+library(tidyverse)
+
+# Convert ETP to a data frame
+ETP <- as.data.frame(ETP)
+
+# Generate the new table with "month" as columns and variables as rows
+library(dplyr)
+
+BHC <- subset(ETP, select = c(month, Avg_PP, Thornthwaite))
+
+
+library(knitr)
+kable(BHC)
+```
+
+### Calculo de Deficit de presión
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+BHC$PP_ETP <- BHC$Avg_PP - BHC$Thornthwaite
+
+```
+
+#### Calcular almacenamiento
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+BHC$Almacenamiento <- NA  # Crear una columna vacía
+
+# Calcular los valores de "Almacenamiento" según las reglas mencionadas
+for (i in 1:nrow(BHC)) {
+  if (i == 1) {
+    if (BHC$PP_ETP[i] > 0) {
+      BHC$Almacenamiento[i] <- 100
+    } else {
+      BHC$Almacenamiento[i] <- 100 * exp(BHC$PP_ETP[i] / 100)
+    }
+  } else if (i == 12) {
+    BHC$Almacenamiento[i] <- 100
+  } else {
+    if (BHC$PP_ETP[i] > 0) {
+      BHC$Almacenamiento[i] <- min(BHC$Almacenamiento[i-1] + BHC$PP_ETP[i], 100)
+    } else {
+      BHC$Almacenamiento[i] <- BHC$Almacenamiento[i-1] * exp(BHC$PP_ETP[i] / 100)
+    }
+  }
+}
+
+# Imprimir el data frame actualizado
+BHC
+
+
+
+```
+
+### Cacular Cambio en el almacenamiento
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Crear la columna "Cambio_almacena" inicializada en NA
+BHC$Cambio_almacena <- NA
+
+# Calcular los cambios de almacenamiento
+for (i in 1:nrow(BHC)) {
+  if (i == 1) {
+    BHC$Cambio_almacena[i] <- BHC$Almacenamiento[i] - BHC$Almacenamiento[12]
+  } else {
+    BHC$Cambio_almacena[i] <- BHC$Almacenamiento[i] - BHC$Almacenamiento[i-1]
+  }
+}
+
+# Imprimir el data frame actualizado
+BHC
+
+
+```
+
+### Cacular Evapotranspiración Real (ETR)
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Calcular la columna "ETR" con los datos de "Avg_PP" y "Cambio_almacena"
+BHC$ETR <- ifelse(BHC$Cambio_almacena < 0, BHC$Avg_PP + abs(BHC$Cambio_almacena), BHC$Thornthwaite)
+
+# Imprimir el data frame actualizado
+BHC
+
+```
+
+### Calcular Deficit Hidrico
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Calcular la columna "Deficit H" con los datos de "Avg_PP" y "ETR"
+BHC$Deficit_H <- BHC$Thornthwaite - BHC$ETR
+
+# Imprimir el data frame actualizado
+BHC
+
+```
+
+
+#### Calcular     Exceso Hidrico
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Crear la columna "Exceso" inicializada en 0
+BHC$Exceso <- 0
+
+# Calcular la columna "Exceso" según las condiciones mencionadas
+for (i in 1:nrow(BHC)) {
+  if (BHC$PP_ETP[i] < 0) {
+    BHC$Exceso[i] <- 0
+  } else {
+    BHC$Exceso[i] <- BHC$Almacenamiento[i-1] + BHC$PP_ETP[i]
+    if (BHC$Exceso[i] > 100) {
+      BHC$Exceso[i] <- ifelse(BHC$Exceso[i] > 100, BHC$Exceso[i] - 100, BHC$Exceso[i])
+    }
+  }
+}
+
+
+BHC
+
+```
+
+#### Calcular Saturación Hidrica
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Calcular la columna "Saturación" con los datos de "Exceso" y "Deficit_H"
+BHC$Saturación <- ifelse(BHC$Exceso == 0, -BHC$Deficit_H, BHC$Exceso)
+
+# Imprimir el data frame actualizado
+BHC
+
+```
+
+
+### Calcular anual
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Generar fila "Anual" con la suma de todas las columnas
+anual_row <- BHC %>%
+  summarize(month = "Anual",
+            across(where(is.numeric), sum))
+
+# Agregar la fila "Anual" al data frame BHC
+BHC <- bind_rows(BHC, anual_row)
+
+# Imprimir el data frame actualizado
+BHC
+```
+
+#### Comprobar que cierra
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Obtener el valor de "Precipiación anual" en la fila 13
+avg_pp_row13 <- BHC$Avg_PP[13]
+
+# Calcular la suma de "ETR" y "Exceso" en la fila 13
+etr_exceso_sum_row13 <- BHC$ETR[13] + BHC$Exceso[13]
+
+# Imprimir ambos valores
+print(avg_pp_row13)
+print(etr_exceso_sum_row13)
+
+# Verificar si los valores son iguales
+son_iguales <- avg_pp_row13 == etr_exceso_sum_row13
+print(son_iguales)
+
+```
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Obtener el valor de "Precipiación anual" en la fila 13
+Thornthwaite_row13 <- BHC$Thornthwaite[13]
+
+# Calcular la suma de "ETR" y "Exceso" en la fila 13
+etr_Deficit_sum_row13 <- BHC$ETR[13] + BHC$Deficit_H[13]
+
+# Imprimir ambos valores
+print(Thornthwaite_row13)
+print(etr_Deficit_sum_row13)
+
+# Verificar si los valores son iguales
+son_igualess <- Thornthwaite_row13 == etr_Deficit_sum_row13
+print(son_igualess)
+```
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Guardar el objeto balance hidrico como un archivo CSV
+write.csv(BHC, file = "BHC.csv", row.names = FALSE)
+
+```
+
+#### Borra fila 13
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(dplyr)
+
+# Suponiendo que "BHC" es el nombre de tu base de datos
+BHC <- BHC %>% slice(-13)
+
+```
+
+#### Generar base de datos para el grafico
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(dplyr)
+library(tidyverse)
+
+ggplot_BHC1 <- BHC %>%
+  select(month, ETR, Avg_PP, Thornthwaite) %>%
+  pivot_longer(cols = c(ETR, Avg_PP, Thornthwaite), names_to = "Variable", values_to = "Valor") %>%
+  mutate(Origen = case_when(
+    Variable == "ETR" ~ "ETR",
+    Variable == "Avg_PP" ~ "Avg_PP",
+    Variable == "Thornthwaite" ~ "Thornthwaite"
+  ))
+
+```
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Reemplazar los nombres de las variables en ggplot_BHC2
+ggplot_BHC1 <- ggplot_BHC1 %>%
+  mutate(Variable = ifelse(Variable == "Avg_PP", "PP", ifelse(Variable == "Thornthwaite", "ETP", Variable)))
+```
+
+
+#### Generar base de datos, balance hidrologico
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(ggplot2)
+
+# Definir los niveles y el orden de los meses
+meses <- c("Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May")
+
+# Convertir la variable month a factor con los niveles definidos
+ggplot_BHC1$month <- factor(ggplot_BHC1$month, levels = meses)
+
+# Crear el gráfico
+ggplot(ggplot_BHC1, aes(x = month, y = Valor, fill = Variable, color = Variable, group = Variable)) +
+  geom_col(data = subset(ggplot_BHC1, Variable == "PP"), show.legend = TRUE) +
+  geom_line(data = subset(ggplot_BHC1, Variable %in% c("ETR", "ETP")), size = 1.5, show.legend = TRUE) +
+  scale_fill_manual(values = c("ETR" = "#00CD00", "ETP" = "#CD0000", "PP" = "#87CEFA"),
+                    labels = c("ETR", "ETP", "PP")) +
+  scale_color_manual(values = c("ETR" = "#00CD00", "ETP" = "#CD0000", "PP" = "#87CEFA"),
+                     labels = c("ETR", "ETP", "PP")) +
+  labs(x = "Month", y = "Valor", title = "Balance Hidrologico") +
+  theme_minimal() +
+  theme(legend.position = "right")
+```
+
+
+###############################################################################################################################################################################################################
+
+### 1.3. índice estandarizado de precipitación
+#### Cargar bases de datos
+```{r warning=FALSE}
+library(readr)
+library(readxl)
+metdata_Santamaria <- read_csv("metdata_Santamaria.csv")
+temperatura_maxima <- read_excel("temperatura_maxima.xlsx", 
+    col_types = c("date", "numeric"))
+
+```
+### Agregar columna de temperatura maxima
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Realizando el merge de los data frames por la columna "Date"
+metdata_Santamaria <- merge(metdata_Santamaria, temperatura_maxima[, c("Date", "TEMP_MAX")], by = "Date", all.x = TRUE)
+# Verificando el resultado
+head(metdata_Santamaria)
+```
+
+### El data frame de temperatura maxima tiene más fechas, esto altera el promedio al agregar 0 en las variables de precipitación y temperatura minima por lo cual se va a corregir
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Eliminar filas con datos faltantes en "TN" y "PP" simultáneamente
+metdata_Santamaria <- metdata_Santamaria[complete.cases(metdata_Santamaria[c("TN", "PP")]), ]
+
+# Verificar el resultado
+head(metdata_Santamaria)
+
+```
+
+#### Agregar la columna mes y año
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(lubridate)
+
+# Agregar columna de mes
+metdata_Santamaria <- metdata_Santamaria %>%
+  mutate(month = month(Date, label = TRUE, abbr = TRUE))                                            
+    
+metdata_Santamaria <- metdata_Santamaria %>%
+  mutate(year = year(Date))                    
+head(metdata_Santamaria)
+```
+
+### Generar data frame para el script de Cálculo del Índice Estandarizado de Precipitación-Evapotranspiración
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(dplyr)
+
+Datos <- metdata_Santamaria %>%
+  select(Año = year, Mes = month, Tmax = TEMP_MAX, Pp = PP, Tmin = TN)
+
+Datos <- Datos %>%
+  group_by(Mes, Año) %>%
+  summarise(Tmax = mean(Tmax, na.rm = TRUE),
+            Pp = mean(Pp, na.rm = TRUE),
+            Tmin = mean(Tmin, na.rm = TRUE))
+
+head(Datos)
+
+
+```
+
+### Cambiar formato de columna mes
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+library(dplyr)
+
+# Definir vector de meses en inglés
+meses_ingles <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
+# Convertir los nombres de los meses a números de mes
+Datos <- Datos %>%
+  mutate(Mes = match(Mes, meses_ingles))
+
+# Verificar el resultado
+head(Datos)
+
+```
+
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+attach(Datos)
+library(SPEI)                               # cargar la libreria para usarla
+ 
+ # PET according to hargreaves               # Calculo de la ETP
+ Datos$ETP_har=hargreaves(Tmin, Tmax,lat=9.9905556)# Latitud de la estacion
+```
+
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+attach(Datos)                               # para elegir las variables directamente
+
+ # Balance                                   # haciendo el BALANCE Pp-ETP
+ Datos$BAL = Pp-ETP_har
+```
+
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# One and tvelwe-months SPEI               
+spei1 <- spei(as.numeric(Datos$BAL), 1)
+            # Obteniendo el SPE, un mes
+ plot(spei1)                                 # Haciendo la figura de SPEI
+```
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+spei12 <- spei(as.numeric(Datos$BAL), 12)
+ plot(spei12)                                # Haciendo la figura de SPEI
+```
+
+
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Obtener los valores del índice SPEI
+spei_values <- spei12$fitted
+
+# Configurar el color de las barras según los valores
+colores <- ifelse(spei_values > 0, "#BBFFFF", "#FF0000")
+
+# Generar el gráfico de barras con los colores configurados
+barplot(spei_values, col = colores)
+
+# Agregar etiquetas en el eje X con espaciado y posición vertical ajustada
+mtext(side = 1, text = 1:20, at = seq(1, length(spei_values), length.out = 20), line = 2)
+
+# Agregar texto debajo del eje X
+title(xlab = "Time", line = 4)
+
+
+
+```
+
+
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Obtener los valores del índice SPEI
+spei_values <- spei12$fitted
+
+# Configurar el color de las barras según los valores
+colores <- ifelse(spei_values > 0, "#BBFFFF", "#FF0000")
+
+# Generar el gráfico de barras con los colores configurados y sin borde
+barplot(spei_values, col = colores, border = "NA")
+
+# Agregar etiquetas en el eje X con espaciado y posición vertical ajustada
+mtext(side = 1, text = 1:20, at = seq(1, length(spei_values), length.out = 20), line = 2)
+
+# Agregar texto debajo del eje X
+title(xlab = "Time", line = 4)
+
+```
+
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+# Obtener los valores del índice SPEI
+spei_values <- spei12$fitted
+
+# Configurar el color de las barras según los valores
+colores <- ifelse(spei_values > 0, "blue", "red")
+
+# Generar el gráfico de barras con los colores configurados
+barplot(spei_values, col = colores)
+
+# Agregar etiquetas en el eje X con espaciado y posición vertical ajustada
+mtext(side = 1, text = 1:20, at = seq(1, length(spei_values), length.out = 20), line = 2, adj = -2.5)
+
+# Agregar texto debajo del eje X
+title(xlab = "Time", line = 4)
+
+```
+
+## VER LOS ESTADISTICOS DE AJUSTE
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+class(spei1)
+```
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+summary(spei1)
+ names(spei1)
+ spei1$call
+ spei1$fitted
+ spei1$coefficients
+```
+
+
+
+
+###############################################################################################################################################################################################################
+
+### La elaboración de mapas tipos raster se realizó con el apoyo del Ph.D.Manuel Spínola Parrallada utilizando las paqueterías de su autoría.
+
+### Fuentes: Spínola, Manuel. 2023. “crcc: cambio climático Costa Rica.” January 30, 2023. https://mspinola-ciencia-de-datos.netlify.app/posts/2023-01-29-crcc/crcc.html.
+
+### Fuentes: Spínola, Manuel. 2023. “crgeo: un paquete de R con datos geoespaciales de Costa Rica.” January 13, 2023. https://mspinola-ciencia-de-datos.netlify.app/posts/2023-01-09-crgeo/crgeo.html.
+
+# Paqueterías
+
+```{r echo=FALSE}
+library(tidyverse)
+library(rio)
+library(sf)
+library(stars)
+library(terra)
+library(devtools)
+library(crgeo)
+library(crgrids)
+library(spData)
+library(units)
+library(tidyterra)
+library(crcc)
+library(RColorBrewer)
+library(raster)
+library(rasterVis)
+library(viridis)
+```
+
+### Las paquetrías creadas por el Dr.Spínola ya tienen dataframes, figuras georeferencias y otros datos de los cuales uno puede disponer, ejemplo los cantones de Costa Rica
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+head(cr_cantons_c)
+```
+
+###Hacer filtrado por cantones de interes
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+valle_intermontano <-filter(cr_cantons_c, NAME_2 %in% c("Alajuela", "Atenas", "Poás", "Palmares", "Grecia", "Naranjo", "San Ramón", "Zarcero", "Sarchí"))
+```
+
+### Ver la figura filtrada
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+plot(valle_intermontano)
+```
+
+#### Convertir a raster
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+prep <-rast(cr_prec_c)
+```
+
+#### Hacer el crop
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+r_crop_prep <- crop(prep, valle_intermontano)
+```
+
+### Visualizar el crop
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+plot(r_crop_prep)
+```
+
+### Hacer el rmask 
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+r_mask_prep <-mask(r_crop_prep, valle_intermontano)
+```
+
+### Graficar solo Enero
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+plot(r_mask_prep[[1]])
+```
+
+#### Tirarlo con ggplot
+
+ 
+```{r echo = FALSE}
+gplot(r_mask_prep) +
+  geom_tile(aes(fill = value)) +
+  facet_wrap(~ variable) +
+  scale_fill_gradientn(colours = viridis_pal(option = "viridis")(9), na.value = NA) +
+  coord_sf() +
+  labs(fill = "Promedio mensual precipitaciones(mm)")
+```
+# Temperaturas
+
+## Temperatura maxima
+#### Convertir a raster
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+tempmx <-rast(cr_tmax_c)
+r_crop_tempmx <- crop(tempmx, valle_intermontano)
+r_mask_tempmx <-mask(r_crop_tempmx, valle_intermontano)
+```
+#### ggplot grafico, se usa la guncion gplot no ggplot
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+gplot(r_mask_tempmx) +
+  geom_tile(aes(fill = value)) +
+  facet_wrap(~ variable) +
+  scale_fill_gradientn(colours = viridis_pal(option = "turbo")(9), na.value = NA) +
+  coord_sf() +
+  labs(fill = "Temperaturas máximas(°C)")
+```
+## Temperatura min
+#### Convertir a raster
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+tempmin <-rast(cr_tmin_c)
+r_crop_tempmin <- crop(tempmin, valle_intermontano)
+r_mask_tempmin <-mask(r_crop_tempmin, valle_intermontano)
+```
+#### ggplot grafico, se usa la guncion gplot no ggplot
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+gplot(r_mask_tempmin) +
+  geom_tile(aes(fill = value)) +
+  facet_wrap(~ variable) +
+  scale_fill_gradientn(colours = viridis_pal(option = "turbo")(9), na.value = NA) +
+  coord_sf() +
+  labs(fill = "Temperaturas mínimas(°C)")
+```
+## Temperatura medias
+#### Convertir a raster
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+tempmed <-rast(cr_tavg_c)
+r_crop_tempmed <- crop(tempmed, valle_intermontano)
+r_mask_tempmed <-mask(r_crop_tempmed, valle_intermontano)
+```
+#### ggplot grafico, se usa la guncion gplot no ggplot
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+gplot(r_mask_tempmed) +
+  geom_tile(aes(fill = value)) +
+  facet_wrap(~ variable) +
+  scale_fill_gradientn(colours = viridis_pal(option = "turbo")(9), na.value = NA) +
+  coord_sf() +
+  labs(fill = "Temperaturas medias(°C)")
+```
+
+## Velocidad del viento
+#### Convertir a raster
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+wind <-rast(cr_wind_c)
+r_crop_wind <- crop(wind, valle_intermontano)
+r_mask_wind <-mask(r_crop_wind, valle_intermontano)
+```
+#### ggplot grafico, se usa la guncion gplot no ggplot
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+gplot(r_mask_wind) +
+  geom_tile(aes(fill = value)) +
+  facet_wrap(~ variable) +
+  scale_fill_gradientn(colours = viridis_pal(option = "mako")(9), na.value = NA) +
+  coord_sf() +
+  labs(fill = "Velocidad del viento(m s^-1)")
+```
+## Altura
+#### Convertir a raster
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+elevation <-rast(cr_elevation_c)
+r_crop_elevation <- crop(elevation, valle_intermontano)
+r_mask_elevation <-mask(r_crop_elevation, valle_intermontano)
+```
+#### ggplot grafico, se usa la guncion gplot no ggplot
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+gplot(r_mask_elevation) +
+  geom_tile(aes(fill = value)) +
+  facet_wrap(~ variable) +
+  scale_fill_gradientn(colours = viridis_pal(option = "magma")(9), na.value = NA) +
+  coord_sf() +
+  labs(fill = "Mapa de elevación (m)")
+```
+## Radiación
+#### Convertir a raster
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+radiation <-rast(cr_srad_c)
+r_crop_radiation <- crop(radiation, valle_intermontano)
+r_mask_radiation <-mask(r_crop_radiation, valle_intermontano)
+```
+#### ggplot grafico, se usa la guncion gplot no ggplot
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+gplot(r_mask_radiation) +
+  geom_tile(aes(fill = value)) +
+  facet_wrap(~ variable) +
+  scale_fill_gradientn(colours = viridis_pal(option = "cividis")(9), na.value = NA) +
+  coord_sf() +
+  labs(fill = "Mapa de radiación solar(kj m^-2 day^-1)")
+```
+## Mapa de 19 variables climáticas
+#### Convertir a raster
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+bio <-rast(cr_bio_c)
+r_crop_bio <- crop(bio, valle_intermontano)
+r_mask_bio <-mask(r_crop_bio, valle_intermontano)
+```
+#### ggplot grafico, se usa la guncion gplot no ggplot
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+gplot(r_mask_bio) +
+  geom_tile(aes(fill = value)) +
+  facet_wrap(~ variable) +
+  scale_fill_gradientn(colours = viridis_pal(option = "plasma")(9), na.value = NA) +
+  coord_sf() +
+  labs(fill = "Mapa de 19 variables climáticas")
+```
+
+## Mapas sobre cambio climatico y proyecciones
+#### Convertir a raster INM_CM4_8 (ECS = 1.83 °C, para ssp370)
+## 2021-2040
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+inm_cm4_8_ssp370_2021_2040 <-rast(cr_inm_cm4_8_ssp370_2021_2040)
+r_crop_inm_cm4_8_ssp370_2021_2040 <- crop(inm_cm4_8_ssp370_2021_2040, valle_intermontano)
+r_mask_inm_cm4_8_ssp370_2021_2040 <-mask(r_crop_inm_cm4_8_ssp370_2021_2040, valle_intermontano)
+```
+#### ggplot grafico, se usa la guncion gplot no ggplot
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+gplot(r_mask_inm_cm4_8_ssp370_2021_2040) +
+  geom_tile(aes(fill = value)) +
+  facet_wrap(~ variable) +
+  scale_fill_gradientn(colours = viridis_pal(option = "inferno")(9), na.value = NA) +
+  coord_sf() +
+  labs(fill = "Mapa de INM_CM4_8 (ECS = 1.83 °C, para ssp370)")
+```
+## 2041-2060
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+inm_cm4_8_ssp370_2041_2060 <-rast(cr_inm_cm4_8_ssp126_2041_2060)
+r_crop_inm_cm4_8_ssp370_2041_2060 <- crop(inm_cm4_8_ssp370_2041_2060, valle_intermontano)
+r_mask_inm_cm4_8_ssp370_2041_2060 <-mask(r_crop_inm_cm4_8_ssp370_2041_2060, valle_intermontano)
+```
+#### ggplot grafico, se usa la guncion gplot no ggplot
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+gplot(r_mask_inm_cm4_8_ssp370_2041_2060) +
+  geom_tile(aes(fill = value)) +
+  facet_wrap(~ variable) +
+  scale_fill_gradientn(colours = viridis_pal(option = "plasma")(9), na.value = NA) +
+  coord_sf() +
+  labs(fill = "Mapa de INM_CM4_8 (ECS = 1.83 °C, para ssp370)")
+```
+## 2061-2100
+
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+inm_cm4_8_ssp370_2061_2080 <-rast(cr_inm_cm4_8_ssp126_2061_2080)
+r_crop_inm_cm4_8_ssp370_2061_2080 <- crop(inm_cm4_8_ssp370_2061_2080, valle_intermontano)
+r_mask_inm_cm4_8_ssp370_2061_2080 <-mask(r_crop_inm_cm4_8_ssp370_2061_2080, valle_intermontano)
+```
+#### ggplot grafico, se usa la guncion gplot no ggplot
+```{r warning=FALSE, echo = FALSE, results = 'hide'}
+gplot(r_mask_inm_cm4_8_ssp370_2061_2080) +
+  geom_tile(aes(fill = value)) +
+  facet_wrap(~ variable) +
+  scale_fill_gradientn(colours = viridis_pal(option = "mako")(9), na.value = NA) +
+  coord_sf() +
+  labs(fill = "Mapa de INM_CM4_8 (ECS = 1.83 °C, para ssp370)")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
